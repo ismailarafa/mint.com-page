@@ -3,7 +3,7 @@
 <head>
   <link href="style.css" rel="stylesheet">
   <meta charset="utf-8">
-  <title>Mint > Start Here</title>
+  <title>Mint &gt; Start Here</title>
 </head>
 <body>
   <div id="top">
@@ -15,24 +15,22 @@
   </div>
   <div id="main">
     <article>
-      <form method=post>
+      <form method="POST" action="#" id="form">
         <fieldset>
           <legend>See all your finances in one place & create a budget</legend>
         </fieldset>
         <ul>
-        <li><label class="labels">Your Email</li>
-        <li><input type="email" name="email-address" placeholder="mohamed@email.com">
-        </label>
-        <li><label class="labels">Confirm Email</li>
-        <li><input type="email" name="confirm-email"></li>
-        </label>
-        <li><label class="labels">Password</li>
-        <li><input type="password" name="password"></li>
-      </label>
-        <li><label class="labels">Confirm Password</li>
-        <li><input type="password" name="confirm-pwd"></li>
+        <li><label class="labels">Your Email</label></li>
+        <li><input id="email" type="email" name="email-address" placeholder="mohamed@email.com">
+        </li>
+        <li><label class="labels">Confirm Email</label></li>
+        <li><input id="confirmEmail" type="email" name="confirm-email"></li>
+        <li><label class="labels">Password</label></li>
+        <li><input id="password" type="password" name="password"></li>
+        <li><label class="labels">Confirm Password</label></li>
+        <li><input id="confirmPassword" type="password" name="confirm-pwd"></li>
         <li><label class="labels" for="remember-me"><input type="checkbox" name="remember-me">Remember me</label></li>
-        <li><label class="labels"><input type="submit" name="submit" value="SIGN UP"></label></li>
+        <li><label class="labels"><input type="submit" name="submit" value="SIGN UP" id="btn"></label></li>
       </ul>
       </form>
       <aside>
@@ -47,6 +45,7 @@
         </div>
       </aside>
       <p>By clicking Sign Up you agree to our <span class="disclaimer">Terms of Use</span> and <span class="disclaimer">Privacy Statement</span>
+      </p>
     </article>
   </div>
   <footer>
@@ -60,5 +59,6 @@
     <img src="images/footer.png" id="foot-img">
     <p><small>© 2017 Intuit, Inc.  |  ph7540.8 - spa95.41</small></p>
   </footer>
+  <script src="main.js"></script>
 </body>
 </html>

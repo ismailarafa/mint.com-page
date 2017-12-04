@@ -14,6 +14,7 @@ body {
   margin-right: 15em;
   margin-left: 15em;
   height: 45em;
+  -webkit-box-shadow: 1px 3px 8px 2px #e2e2e2;
   box-shadow: 1px 3px 8px 2px #e2e2e2;
   display: block;
   border: 0;
@@ -37,6 +38,12 @@ form ul {
   position: relative;
   right: 1.5em;
   font-size: 13px;
+}
+
+.error {
+  font-size: 0.75rem;
+  margin-bottom: 1rem;
+  width: 70%;
 }
 
 input {
