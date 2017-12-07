@@ -33,22 +33,27 @@ form ul {
 }
 
 .labels {
-  float: left;
   margin-bottom: 1.2em;
   position: relative;
-  right: 1.5em;
+  left: -1.666667em;
   font-size: 13px;
 }
 
-.error {
+.float {
+  float: left;
+}
+
+.error-text {
   font-size: 0.75rem;
   margin-bottom: 1rem;
   width: 70%;
+  margin-left: -1.5rem;
+  color: #d81c1c;
 }
 
 input {
   padding-right: 1em;
-  margin-bottom: 2.6em;
+  margin-bottom: 1.666666667em;
   height: 30px;
   border: 1px solid #d8d8d8;
   border-radius: 2px;
@@ -113,9 +118,8 @@ aside {
   display: inline;
   width: 14em;
   float: right;
-  margin-top: -37em;
+  margin-top: -34em;
   height: 37em;
-  float: right;
 }
 
 .disclaimer {

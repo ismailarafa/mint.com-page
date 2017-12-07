@@ -1,158 +1,169 @@
 var model = (function () {
-  var isValidEmail = function (val) {
-    var emailRegex = /^.+@.+\..+$/;
-    if (val) {
-      return emailRegex.test(val);
+  var isValid = function (field) {
+    var validity = field.validity;
+    var doPasswordsMatch = document.getElementById('email').value === document.getElementById('confirmEmail').value;
+    var doEmailsMatch = document.getElementById('password').value === document.getElementById('confirmPassword').value;
+
+    if (validity.valid) {
+      return;
+    }
+
+    if (validity.valueMissing) {
+      return 'Please fill out this field';
+    }
+
+    if (validity.tooShort) {
+      if (field.type === 'password') {
+        return 'Minimum password length is 8 characters';
+      }
+    }
+
+    if (validity.patternMismatch) {
+      if (field.type === 'password') {
+        return 'Passwords must contain a lowercase letter, uppercase letter, number and a symbol \'!@#$%^&*\'';
+      } else if (field.type === 'email') {
+        return 'Please enter a valid e-mail address';
+      }
+    }
+
+    if (field.id === 'confirmPassword' && !doPasswordsMatch) {
+      return 'Passwords do not match';
+    } else if (field.id === 'confirmEmail' && !doEmailsMatch) {
+      return 'E-mail addresses provided do not match';
     }
   };
 
-  var isEqual = function (val1, val2) {
-    if (val1 === val2) {
-      return true;
-    }
-    return false;
-  };
+  var disableNativeValidation = function () {
+    var form = document.querySelectorAll('.validate');
+    var i;
 
-  var isValidPassword = function (val) {
-    var passwordRegex = /^(?=.*[\d])(?=.*[!@#$%^&*])[\w!@#$%^&*]{8,}$/;
-    if (val) {
-      return passwordRegex.test(val);
+    for (i = 0; i < form.length; i += 1) {
+      form[i].setAttribute('novalidate', true);
     }
   };
 
   return {
-    isEqual: isEqual,
-    isValidEmail: isValidEmail,
-    isValidPassword: isValidPassword
+    isValid: isValid,
+    disableNativeValidation: disableNativeValidation
   };
 }());
 
 var view = (function () {
-  var drawError = function (field) {
+  var drawError = function (field, error) {
     var errorMsg = document.createElement('li');
-    var deleteError = (function () {
-      var errors = document.getElementsByClassName('error');
-      var i;
+    var id = field.id || field.name;
+    var message;
+    field.classList.add('error');
 
-      if (errors.length > 0) {
-        for (i = 0; i < errors.length; i += 1) {
-          errors[i].parentNode.removeChild(errors[i]);
-        }
-      }
-    }());
-
-    if (field.id === 'email') {
-      errorMsg.innerHTML = 'Please input a valid e-mail address';
-    } else if (field.id === 'confirmEmail') {
-      errorMsg.innerHTML = 'E-mail addresses don\'t match';
-    } else if (field.id === 'password') {
-      errorMsg.innerHTML = 'Password must be 8 characters and contain at least a number, lowercase letter, uppercase letter, and one of the following symbols \'!@#$%^&*\'';
-    } else if (field.id === 'confirmPassword') {
-      errorMsg.innerHTML = 'Passwords don\'t match';
+    if (!id) {
+      return;
     }
 
-    errorMsg.className = 'error';
+    message = field.form.querySelector('.error-text#error-for-' + id);
+
+    if (!message) {
+      errorMsg.className = 'error-text';
+      errorMsg.id = 'error-for-' + id;
+      errorMsg.innerHTML = error;
+    }
+
+    field.setAttribute('aria-describedby', 'error-for-' + id);
     field.parentNode.appendChild(errorMsg);
   };
 
+  var deleteError = function (field) {
+    var id;
+    var errorMsg;
+
+    field.classList.remove('error');
+    field.removeAttribute('aria-describedby');
+
+    id = field.id || field.name;
+
+    if (!id) {
+      return;
+    }
+
+    errorMsg = field.form.querySelector('.error-text#error-for-' + id + '');
+
+    if (!errorMsg) {
+      return;
+    }
+
+    errorMsg.parentNode.removeChild(errorMsg);
+  };
+
   return {
-    drawError: drawError
+    drawError: drawError,
+    deleteError: deleteError
   };
 }());
 
 var handlers = (function () {
-  var emailFieldListener = function () {
-    var emailField = document.getElementById('email');
-    var checkEmail = function () {
-      var emailVal = emailField.value;
+  var blurListener = function () {
+    var validateFields = function (e) {
+      var error;
 
-      if (emailVal !== '' && !model.isValidEmail(emailVal)) {
-        view.drawError(emailField);
+      if (!e.target.form.classList.contains('validate')) {
+        return;
       }
+
+      error = model.isValid(e.target);
+
+      if (error) {
+        view.drawError(e.target, error);
+        return;
+      }
+
+      view.deleteError(e.target);
     };
 
-    emailField.addEventListener('blur', checkEmail);
+    document.addEventListener('blur', validateFields, true);
   };
 
-  var confirmEmailListener = function () {
-    var confirmEmailField = document.getElementById('confirmEmail');
-    var checkConfirmEmail = function () {
-      var confirmEmailVal = confirmEmailField.value;
-      var emailVal = document.getElementById('email').value;
+  var submitListener = function () {
+    var validateForm = function (e) {
+      var error;
+      var hasErrors;
+      var fields;
+      var i;
 
-      if (confirmEmailField !== '' && !model.isEqual(confirmEmailVal, emailVal)) {
-        view.drawError(confirmEmailField);
+      if (!e.target.classList.contains('validate')) {
+        return;
+      }
+      fields = e.target.elements;
+
+      for (i = 0; i < fields.length; i += 1) {
+        error = model.isValid(fields[i]);
+
+        if (error) {
+          view.drawError(fields[i], error);
+
+          if (!hasErrors) {
+            hasErrors = fields[i];
+          }
+        }
+      }
+
+      if (hasErrors) {
+        e.preventDefault();
+        hasErrors.focus();
       }
     };
 
-    confirmEmailField.addEventListener('blur', checkConfirmEmail);
-  };
-
-  var passwordFieldListener = function () {
-    var passwordField = document.getElementById('password');
-    var checkPassword = function () {
-      var passwordVal = passwordField.value;
-
-      if (passwordVal !== '' && !model.isValidPassword(passwordVal)) {
-        view.drawError(passwordField);
-      }
-    };
-
-    passwordField.addEventListener('blur', checkPassword);
-  };
-
-  var confirmPasswordListener = function () {
-    var confirmPasswordField = document.getElementById('confirmPassword');
-    var confirmPassword = function () {
-      var confirmPasswordVal = confirmPasswordField.value;
-      var passwordVal = document.getElementById('password').value;
-
-      if (confirmPasswordVal !== '' && !model.isEqual(confirmPasswordVal, passwordVal)) {
-        view.drawError(confirmPasswordField);
-      }
-    };
-
-    confirmPasswordField.addEventListener('blur', confirmPassword);
-  };
-
-  var formSubmitListener = function (e) {
-    var btn = document.getElementById('btn');
-    var checkForm = function () {
-      var emailField = document.getElementById('email');
-      var confirmEmailField = document.getElementById('confirmEmail');
-      var passwordField = document.getElementById('password');
-      var confirmPasswordField = document.getElementById('confirmPassword');
-      e.preventDefault();
-
-      if (emailField.value !== '' && !model.isValidEmail(emailField.value)) {
-        view.drawError(emailField);
-      } else if (confirmEmailField.value !== '' && !model.isEqual(emailField.value, confirmEmailField.value)) {
-        view.drawError(confirmEmailField);
-      } else if (passwordField.value !== '' && !model.isValidPassword(passwordField.value)) {
-        view.drawError(passwordField);
-      } else if (confirmPasswordField.value !== '' && !model.isEqual(confirmPasswordField.value, passwordField.value)) {
-        view.drawError(confirmPasswordField);
-      }
-    };
-
-    btn.addEventListener('click', checkForm);
+    document.addEventListener('submit', validateForm, false);
   };
 
   var initListener = function () {
-    emailFieldListener();
-    confirmEmailListener();
-    passwordFieldListener();
-    confirmPasswordListener();
-    formSubmitListener();
+    blurListener();
+    submitListener();
   };
 
   return {
-    emailFieldListener: emailFieldListener,
-    confirmEmailListener: confirmEmailListener,
-    passwordFieldListener: passwordFieldListener,
-    confirmPasswordListener: confirmPasswordListener,
     initListener: initListener
   };
 }());
 
+
+model.disableNativeValidation();
 handlers.initListener();

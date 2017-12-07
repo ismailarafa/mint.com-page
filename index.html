@@ -15,22 +15,22 @@
   </div>
   <div id="main">
     <article>
-      <form method="POST" action="#" id="form">
+      <form method="POST" action="#" id="form" class="validate">
         <fieldset>
           <legend>See all your finances in one place & create a budget</legend>
         </fieldset>
         <ul>
         <li><label class="labels">Your Email</label></li>
-        <li><input id="email" type="email" name="email-address" placeholder="mohamed@email.com">
+        <li><input id="email" type="email" name="email-address" placeholder="mohamed@email.com" pattern="^.+@.+\..+$" required>
         </li>
         <li><label class="labels">Confirm Email</label></li>
-        <li><input id="confirmEmail" type="email" name="confirm-email"></li>
+        <li><input id="confirmEmail" type="email" name="confirm-email" required></li>
         <li><label class="labels">Password</label></li>
-        <li><input id="password" type="password" name="password"></li>
+        <li><input id="password" type="password" name="password" minlength="8" pattern="^(?=.*[\d])(?=.*[!@#$%^\x26*])[\w!@#$%^\x26*]$" required></li>
         <li><label class="labels">Confirm Password</label></li>
-        <li><input id="confirmPassword" type="password" name="confirm-pwd"></li>
-        <li><label class="labels" for="remember-me"><input type="checkbox" name="remember-me">Remember me</label></li>
-        <li><label class="labels"><input type="submit" name="submit" value="SIGN UP" id="btn"></label></li>
+        <li><input id="confirmPassword" type="password" name="confirm-pwd" required></li>
+        <li><label class="labels float" for="remember-me"><input type="checkbox" name="remember-me">Remember me</label></li>
+        <li><label class="labels float"><input type="submit" name="submit" value="SIGN UP" id="btn"></label></li>
       </ul>
       </form>
       <aside>
