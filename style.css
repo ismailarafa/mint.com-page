@@ -63,6 +63,24 @@ input {
   width: 26em;
 }
 
+input:focus {
+  border: 1px solid #07c;
+}
+
+.success {
+  border: 1px solid #3cd574;
+}
+
+.success-text {
+  color: #3cd574;
+  margin-left: -1.33333333rem;
+  margin-top: -1rem;
+}
+
+.error {
+  border: 1px solid #d81c1c;
+}
+
 #safe {
   text-decoration: underline;
   cursor: pointer;

@@ -2,11 +2,19 @@ var model = (function () {
   var state = [];
   var getValidationState = function (field) {
     var validity = field.validity;
-    var doPasswordsMatch = document.getElementById('email').value === document.getElementById('confirmEmail').value;
-    var doEmailsMatch = document.getElementById('password').value === document.getElementById('confirmPassword').value;
+    var doEmailsMatch = document.getElementById('email').value === document.getElementById('confirmEmail').value;
+    var doPasswordsMatch = document.getElementById('password').value === document.getElementById('confirmPassword').value;
+
+    if (field.id === 'confirmEmail' && !doEmailsMatch) {
+      return 'E-mail addresses do not match';
+    }
+
+    if (field.id === 'confirmPassword' && !doPasswordsMatch) {
+      return 'Passwords do not match';
+    }
 
     if (validity.valid) {
-      return;
+      return 'valid';
     }
 
     if (validity.valueMissing) {
@@ -25,12 +33,6 @@ var model = (function () {
       } else if (field.type === 'email') {
         return 'Please enter a valid e-mail address';
       }
-    }
-
-    if (field.id === 'confirmPassword' && !doPasswordsMatch) {
-      return 'Passwords do not match';
-    } else if (field.id === 'confirmEmail' && !doEmailsMatch) {
-      return 'E-mail addresses provided do not match';
     }
   };
 
@@ -80,11 +82,11 @@ var view = (function () {
 
   var render = function () {
     model.state.forEach(function (obj) {
-      var currField;
       var errorMsg = document.createElement('li');
+      var successMsg = document.createElement('li');
+      var currField = document.getElementById(obj.id);
 
-      if (obj.error) {
-        currField = document.getElementById(obj.id);
+      if (obj.error !== 'valid') {
         currField.classList.add('error');
 
         if (!currField.form.querySelector('.error-text#error-for-' + obj.id)) {
@@ -94,6 +96,13 @@ var view = (function () {
           currField.setAttribute('aria-describedby', 'error-for-' + obj.id);
           currField.parentNode.appendChild(errorMsg);
         }
+      } else if (!currField.form.querySelector('.success-text#success-for-' + obj.id)) {
+        currField.classList.add('success');
+        currField.setAttribute('aria-describedby', 'success-for-' + obj.id);
+        successMsg.className = 'success-text';
+        successMsg.id = 'success-for-' + obj.id;
+        successMsg.insertAdjacentHTML('beforeend', '<span class="fa fa-check-circle aria-hidden="true"></span>');
+        currField.parentNode.appendChild(successMsg);
       }
     });
   };
@@ -107,9 +116,11 @@ var view = (function () {
 var handlers = (function () {
   var blurListener = function () {
     var validateFields = function (e) {
-      model.state.splice(0, model.state.length);
-      console.log(e.target);
-      view.deleteError(e.target);
+      debugger;
+      if (e.target.classList.contains('error')) {
+        view.deleteError(e.target);
+        model.state.splice(0, model.state.length);
+      }
       model.updateState(e.target);
       view.render();
     };
