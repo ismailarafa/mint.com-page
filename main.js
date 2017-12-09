@@ -107,16 +107,11 @@ var view = (function () {
 var handlers = (function () {
   var blurListener = function () {
     var validateFields = function (e) {
-      var error;
-
-      error = model.getValidationState(e.target);
       model.state.splice(0, model.state.length);
-
-      if (error) {
-        view.render();
-      }
-
+      console.log(e.target);
       view.deleteError(e.target);
+      model.updateState(e.target);
+      view.render();
     };
 
     document.addEventListener('blur', validateFields, true);
@@ -124,7 +119,6 @@ var handlers = (function () {
 
   var submitListener = function () {
     var validateForm = function (e) {
-      var error;
       var hasErrors;
       var fields;
       var i;
@@ -133,8 +127,7 @@ var handlers = (function () {
       model.state.splice(0, model.state.length);
 
       for (i = 0; i < fields.length; i += 1) {
-        error = model.getValidationState(fields[i]);
-        model.updateState(fields[i], error);
+        model.updateState(fields[i]);
 
         if (!hasErrors) {
           hasErrors = fields[i];
