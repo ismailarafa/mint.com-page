@@ -1,5 +1,6 @@
 var model = (function () {
-  var isValid = function (field) {
+  var state = [];
+  var getValidationState = function (field) {
     var validity = field.validity;
     var doPasswordsMatch = document.getElementById('email').value === document.getElementById('confirmEmail').value;
     var doEmailsMatch = document.getElementById('password').value === document.getElementById('confirmPassword').value;
@@ -42,35 +43,28 @@ var model = (function () {
     }
   };
 
+  var updateState = function (field) {
+    var err = model.getValidationState(field);
+    var isFormField = field.type !== 'submit' && field.type !== 'fieldset' && field.type !== 'checkbox';
+
+    if (isFormField) {
+      model.state.push({
+        id: field.id,
+        value: field.value,
+        error: err
+      });
+    }
+  };
+
   return {
-    isValid: isValid,
-    disableNativeValidation: disableNativeValidation
+    getValidationState: getValidationState,
+    disableNativeValidation: disableNativeValidation,
+    updateState: updateState,
+    state: state
   };
 }());
 
 var view = (function () {
-  var drawError = function (field, error) {
-    var errorMsg = document.createElement('li');
-    var id = field.id || field.name;
-    var message;
-    field.classList.add('error');
-
-    if (!id) {
-      return;
-    }
-
-    message = field.form.querySelector('.error-text#error-for-' + id);
-
-    if (!message) {
-      errorMsg.className = 'error-text';
-      errorMsg.id = 'error-for-' + id;
-      errorMsg.innerHTML = error;
-    }
-
-    field.setAttribute('aria-describedby', 'error-for-' + id);
-    field.parentNode.appendChild(errorMsg);
-  };
-
   var deleteError = function (field) {
     var id;
     var errorMsg;
@@ -79,22 +73,33 @@ var view = (function () {
     field.removeAttribute('aria-describedby');
 
     id = field.id || field.name;
-
-    if (!id) {
-      return;
-    }
-
     errorMsg = field.form.querySelector('.error-text#error-for-' + id + '');
-
-    if (!errorMsg) {
-      return;
-    }
 
     errorMsg.parentNode.removeChild(errorMsg);
   };
 
+  var render = function () {
+    model.state.forEach(function (obj) {
+      var currField;
+      var errorMsg = document.createElement('li');
+
+      if (obj.error) {
+        currField = document.getElementById(obj.id);
+        currField.classList.add('error');
+
+        if (!currField.form.querySelector('.error-text#error-for-' + obj.id)) {
+          errorMsg.innerHTML = obj.error;
+          errorMsg.className = 'error-text';
+          errorMsg.id = 'error-for-' + obj.id;
+          currField.setAttribute('aria-describedby', 'error-for-' + obj.id);
+          currField.parentNode.appendChild(errorMsg);
+        }
+      }
+    });
+  };
+
   return {
-    drawError: drawError,
+    render: render,
     deleteError: deleteError
   };
 }());
@@ -104,15 +109,11 @@ var handlers = (function () {
     var validateFields = function (e) {
       var error;
 
-      if (!e.target.form.classList.contains('validate')) {
-        return;
-      }
-
-      error = model.isValid(e.target);
+      error = model.getValidationState(e.target);
+      model.state.splice(0, model.state.length);
 
       if (error) {
-        view.drawError(e.target, error);
-        return;
+        view.render();
       }
 
       view.deleteError(e.target);
@@ -128,20 +129,15 @@ var handlers = (function () {
       var fields;
       var i;
 
-      if (!e.target.classList.contains('validate')) {
-        return;
-      }
       fields = e.target.elements;
+      model.state.splice(0, model.state.length);
 
       for (i = 0; i < fields.length; i += 1) {
-        error = model.isValid(fields[i]);
+        error = model.getValidationState(fields[i]);
+        model.updateState(fields[i], error);
 
-        if (error) {
-          view.drawError(fields[i], error);
-
-          if (!hasErrors) {
-            hasErrors = fields[i];
-          }
+        if (!hasErrors) {
+          hasErrors = fields[i];
         }
       }
 
@@ -149,6 +145,8 @@ var handlers = (function () {
         e.preventDefault();
         hasErrors.focus();
       }
+
+      view.render();
     };
 
     document.addEventListener('submit', validateForm, false);
@@ -164,6 +162,7 @@ var handlers = (function () {
   };
 }());
 
-
-model.disableNativeValidation();
-handlers.initListener();
+document.addEventListener('DOMContentLoaded', function () {
+  model.disableNativeValidation();
+  handlers.initListener();
+}, false);
