@@ -1,5 +1,5 @@
 var model = (function () {
-  var state = [];
+  var state = {};
   var getValidationState = function (field) {
     var validity = field.validity;
     var doEmailsMatch = document.getElementById('email').value === document.getElementById('confirmEmail').value;
@@ -47,15 +47,12 @@ var model = (function () {
 
   var updateState = function (field) {
     var err = model.getValidationState(field);
-    var isFormField = field.type !== 'submit' && field.type !== 'fieldset' && field.type !== 'checkbox';
 
-    if (isFormField) {
-      model.state.push({
-        id: field.id,
-        value: field.value,
-        error: err
-      });
-    }
+    model.state[field.id] = {
+      id: field.id,
+      value: field.value,
+      error: err
+    };
   };
 
   return {
@@ -81,10 +78,11 @@ var view = (function () {
   };
 
   var render = function () {
-    model.state.forEach(function (obj) {
+    _.forEach(model.state, function (obj) {
       var errorMsg = document.createElement('li');
       var successMsg = document.createElement('li');
       var currField = document.getElementById(obj.id);
+      console.log(model.state.keys);
 
       if (obj.error !== 'valid') {
         currField.classList.add('error');
@@ -116,12 +114,16 @@ var view = (function () {
 var handlers = (function () {
   var blurListener = function () {
     var validateFields = function (e) {
-      debugger;
+      var isFormField = e.target.type !== 'submit' && e.target.type !== 'fieldset' && e.target.type !== 'checkbox';
+
       if (e.target.classList.contains('error')) {
         view.deleteError(e.target);
-        model.state.splice(0, model.state.length);
       }
-      model.updateState(e.target);
+
+      if (isFormField) {
+        model.updateState(e.target);
+      }
+
       view.render();
     };
 
@@ -130,15 +132,19 @@ var handlers = (function () {
 
   var submitListener = function () {
     var validateForm = function (e) {
+      var isFormField;
       var hasErrors;
       var fields;
       var i;
 
       fields = e.target.elements;
-      model.state.splice(0, model.state.length);
 
       for (i = 0; i < fields.length; i += 1) {
-        model.updateState(fields[i]);
+        isFormField = fields[i].type !== 'submit' && fields[i].type !== 'fieldset' && fields[i].type !== 'checkbox';
+
+        if (isFormField) {
+          model.updateState(fields[i]);
+        }
 
         if (!hasErrors) {
           hasErrors = fields[i];
